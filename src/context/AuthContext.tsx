@@ -17,43 +17,26 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // Check for active session
-    fetch('/api/me')
-      .then(res => {
-        if (res.ok) return res.json();
-        throw new Error('No session');
-      })
-      .then(userData => {
-        setUser(userData);
-      })
-      .catch(() => {
-        setUser(null);
-      })
-      .finally(() => {
-        setLoading(false);
-      });
-  }, []);
+  // Always return a default admin user
+  const [user, setUser] = useState<User | null>({
+    id: 'default-admin',
+    username: 'admin',
+    role: 'admin',
+    theme: 'light'
+  });
+  const [loading, setLoading] = useState(false);
 
   const login = (userData: User) => {
     setUser(userData);
   };
 
-  const logout = async () => {
-    try {
-      await fetch('/api/logout', { method: 'POST' });
-    } catch (err) {
-      console.error(err);
-    }
-    setUser(null);
+  const logout = () => {
+    // No-op
   };
 
   return (
     <AuthContext.Provider value={{ user, login, logout, loading }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 }

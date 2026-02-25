@@ -7,7 +7,6 @@ import {
   Package, 
   Receipt, 
   PieChart, 
-  LogOut, 
   Moon, 
   Sun,
   Menu,
@@ -16,7 +15,7 @@ import {
 import { clsx } from 'clsx';
 
 export default function Layout() {
-  const { user, logout } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [isDark, setIsDark] = React.useState(user?.theme === 'dark');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
@@ -43,11 +42,6 @@ export default function Layout() {
     } catch (err) {
       console.error('Failed to save theme preference', err);
     }
-  };
-
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
   };
 
   const navItems = [
@@ -102,14 +96,14 @@ export default function Layout() {
         </nav>
 
         <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex items-center justify-between mb-4 px-2">
+          <div className="flex items-center justify-between px-2">
             <div className="flex items-center space-x-2">
               <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold">
-                {user?.username?.[0]?.toUpperCase()}
+                A
               </div>
               <div className="text-sm">
-                <p className="font-medium">{user?.username}</p>
-                <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+                <p className="font-medium">Admin</p>
+                <p className="text-xs text-gray-500 capitalize">System</p>
               </div>
             </div>
             <button 
@@ -119,13 +113,6 @@ export default function Layout() {
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
           </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
-          >
-            <LogOut className="w-4 h-4 mr-2" />
-            Sign Out
-          </button>
         </div>
       </aside>
 

@@ -1,35 +1,19 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider, useAuth } from './context/AuthContext';
+import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout';
-import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import POS from './pages/POS';
 import Inventory from './pages/Inventory';
 import Expenses from './pages/Expenses';
 import Finance from './pages/Finance';
 
-import Register from './pages/Register';
-
-function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
-  if (loading) return <div>Loading...</div>;
-  return user ? <>{children}</> : <Navigate to="/login" />;
-}
-
 export default function App() {
   return (
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          
-          <Route path="/" element={
-            <PrivateRoute>
-              <Layout />
-            </PrivateRoute>
-          }>
+          <Route path="/" element={<Layout />}>
             <Route index element={<Dashboard />} />
             <Route path="pos" element={<POS />} />
             <Route path="inventory" element={<Inventory />} />

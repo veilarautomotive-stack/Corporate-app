@@ -111,8 +111,8 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Generic View Reader (Protected)
-app.get('/api/views/:viewName', authenticateToken, (req, res) => {
+// Generic View Reader (Public)
+app.get('/api/views/:viewName', (req, res) => {
   const viewName = req.params.viewName;
   // Whitelist views for security
   const allowedViews = [
@@ -138,8 +138,8 @@ app.get('/api/views/:viewName', authenticateToken, (req, res) => {
   }
 });
 
-// Procedures (Protected)
-app.post('/api/rpc/:procedure', authenticateToken, (req, res) => {
+// Procedures (Public)
+app.post('/api/rpc/:procedure', (req, res) => {
   const procedureName = req.params.procedure;
   const args = req.body;
 
