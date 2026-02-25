@@ -8,9 +8,9 @@ export default function Finance() {
   const [loading, setLoading] = useState(true);
   
   // Distribution Form
-  const [partnerA, setPartnerA] = useState(40);
-  const [partnerB, setPartnerB] = useState(40);
-  const [reinvest, setReinvest] = useState(20);
+  const [partnerA, setPartnerA] = useState<number | string>(40);
+  const [partnerB, setPartnerB] = useState<number | string>(40);
+  const [reinvest, setReinvest] = useState<number | string>(20);
 
   useEffect(() => {
     fetchData();
@@ -29,12 +29,16 @@ export default function Finance() {
 
   const handleDistribution = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (partnerA + partnerB + reinvest !== 100) {
+    const pA = typeof partnerA === 'string' ? 0 : partnerA;
+    const pB = typeof partnerB === 'string' ? 0 : partnerB;
+    const rI = typeof reinvest === 'string' ? 0 : reinvest;
+
+    if (pA + pB + rI !== 100) {
       alert('Percentages must sum to 100%');
       return;
     }
     try {
-      await rpc('distributeProfit', { partnerA, partnerB, reinvest });
+      await rpc('distributeProfit', { partnerA: pA, partnerB: pB, reinvest: rI });
       alert('Profit distributed successfully');
       fetchData();
     } catch (err: any) {
@@ -121,7 +125,7 @@ export default function Finance() {
                   max="100"
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent"
                   value={partnerA}
-                  onChange={(e) => setPartnerA(parseInt(e.target.value))}
+                  onChange={(e) => setPartnerA(e.target.value === '' ? '' : parseInt(e.target.value))}
                 />
               </div>
               <div>
@@ -132,7 +136,7 @@ export default function Finance() {
                   max="100"
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent"
                   value={partnerB}
-                  onChange={(e) => setPartnerB(parseInt(e.target.value))}
+                  onChange={(e) => setPartnerB(e.target.value === '' ? '' : parseInt(e.target.value))}
                 />
               </div>
               <div>
@@ -143,7 +147,7 @@ export default function Finance() {
                   max="100"
                   className="w-full px-3 py-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent"
                   value={reinvest}
-                  onChange={(e) => setReinvest(parseInt(e.target.value))}
+                  onChange={(e) => setReinvest(e.target.value === '' ? '' : parseInt(e.target.value))}
                 />
               </div>
             </div>

@@ -27,8 +27,13 @@ export default function Expenses() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const parsedAmount = parseFloat(amount);
+      if (isNaN(parsedAmount)) {
+        throw new Error('Please enter a valid amount');
+      }
+
       await rpc('processExpense', {
-        amount: parseFloat(amount),
+        amount: parsedAmount,
         type,
         note
       });

@@ -32,32 +32,22 @@ export default function Inventory() {
   const handleAddItem = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // We need a category ID. For now, let's fetch categories or hardcode one if none exist.
-      // Wait, we need to create a category first if none exist.
-      // Let's just pick the first category or ask user to create one.
-      // For simplicity, I'll fetch categories and pick the first one, or create 'General'.
-      
-      // Actually, let's just create a 'General' category if it doesn't exist in the backend?
-      // No, "Database = brain". I should call `addCategory` if needed.
-      // Let's assume a category exists or I'll create one on the fly?
-      // Better: Fetch categories. If empty, prompt to create.
-      // For this MVP, I'll just try to use a default category ID or fetch one.
-      
-      // Let's just create a category "General" if we can't find one.
-      // But I can't do that easily here without more logic.
-      // I'll add a "Category" field to the form?
-      // Or just hardcode a category creation in the seed?
-      // I'll add a seed for category in server.ts later.
-      // For now, I'll assume a category exists with ID 'general' (I'll seed it).
-      
+      const cost = parseFloat(newItem.cost);
+      const price = parseFloat(newItem.price);
+      const minStock = parseInt(newItem.minStock);
+
+      if (isNaN(cost) || isNaN(price) || isNaN(minStock)) {
+        throw new Error('Please enter valid numbers');
+      }
+
       await rpc('addInventoryItem', {
-        categoryId: 'general', // I will seed this
+        categoryId: 'general', 
         sku: newItem.sku,
         name: newItem.name,
-        cost: parseFloat(newItem.cost),
-        price: parseFloat(newItem.price),
+        cost,
+        price,
         initialStock: 0,
-        minStock: parseInt(newItem.minStock)
+        minStock
       });
       setShowAddModal(false);
       fetchInventory();
@@ -70,11 +60,19 @@ export default function Inventory() {
   const handleRestock = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      const quantity = parseInt(restock.quantity);
+      const cost = parseFloat(restock.cost);
+      const price = parseFloat(restock.price);
+
+      if (isNaN(quantity) || isNaN(cost) || isNaN(price)) {
+        throw new Error('Please enter valid numbers');
+      }
+
       await rpc('processRestock', {
         sku: selectedItem.sku,
-        quantity: parseInt(restock.quantity),
-        costPrice: parseFloat(restock.cost),
-        sellingPrice: parseFloat(restock.price)
+        quantity,
+        costPrice: cost,
+        sellingPrice: price
       });
       setShowRestockModal(false);
       fetchInventory();
