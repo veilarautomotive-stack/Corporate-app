@@ -29,9 +29,20 @@ export default function Layout() {
     }
   }, [isDark]);
 
-  const toggleTheme = () => {
+  const toggleTheme = async () => {
+    const newTheme = !isDark ? 'dark' : 'light';
     setIsDark(!isDark);
-    // TODO: Persist to DB
+    
+    // Persist to DB
+    try {
+      await fetch('/api/theme', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ theme: newTheme }),
+      });
+    } catch (err) {
+      console.error('Failed to save theme preference', err);
+    }
   };
 
   const handleLogout = () => {

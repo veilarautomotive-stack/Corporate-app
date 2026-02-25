@@ -2,13 +2,18 @@ import express from 'express';
 import { createServer as createViteServer } from 'vite';
 import db from './db';
 import * as procedures from './db/procedures';
+import * as auth from './db/auth';
 import bcrypt from 'bcryptjs';
 import { v4 as uuidv4 } from 'uuid';
+import jwt from 'jsonwebtoken';
+import cookieParser from 'cookie-parser';
 
 const app = express();
 const PORT = 3000;
+const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret-key-123';
 
 app.use(express.json());
+app.use(cookieParser());
 
 // Seed Admin User
 const seedAdmin = () => {
@@ -16,8 +21,8 @@ const seedAdmin = () => {
   if (!admin) {
     const hash = bcrypt.hashSync('admin123', 10);
     db.prepare(`
-      INSERT INTO users (id, username, password_hash, role, theme_preference)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO users (id, username, password_hash, role, theme_preference, created_at)
+      VALUES (?, ?, ?, ?, ?, datetime('now'))
     `).run(uuidv4(), 'admin', hash, 'admin', 'light');
     console.log('Admin user created: admin / admin123');
   }
@@ -37,30 +42,77 @@ const seedCategory = () => {
 };
 seedCategory();
 
-// Auth Route
-app.post('/api/login', (req, res) => {
-  const { username, password } = req.body;
-  const user = db.prepare('SELECT * FROM users WHERE username = ?').get(username) as any;
-  
-  if (!user || !bcrypt.compareSync(password, user.password_hash)) {
-    return res.status(401).json({ error: 'Invalid credentials' });
-  }
-  
-  res.json({ 
-    id: user.id, 
-    username: user.username, 
-    role: user.role, 
-    theme: user.theme_preference 
+// Auth Middleware
+const authenticateToken = (req: any, res: any, next: any) => {
+  const token = req.cookies.token;
+  if (!token) return res.sendStatus(401);
+
+  jwt.verify(token, JWT_SECRET, (err: any, user: any) => {
+    if (err) return res.sendStatus(403);
+    req.user = user;
+    next();
   });
+};
+
+// Auth Routes
+app.post('/api/register', (req, res) => {
+  const { username, password, role } = req.body;
+  try {
+    const user = auth.registerUser(username, password, role);
+    res.json({ success: true, user });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
 });
 
-// API Routes
+app.post('/api/login', (req, res) => {
+  const { username, password } = req.body;
+  try {
+    const user = auth.loginUser(username, password);
+    const token = jwt.sign(user, JWT_SECRET, { expiresIn: '8h' });
+    
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax', // Or 'strict'
+      maxAge: 8 * 60 * 60 * 1000 // 8 hours
+    });
+    
+    res.json(user);
+  } catch (err: any) {
+    res.status(401).json({ error: err.message });
+  }
+});
+
+app.post('/api/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ success: true });
+});
+
+app.get('/api/me', authenticateToken, (req: any, res) => {
+  // Fetch fresh user data from DB to ensure role/theme is up to date
+  const user = db.prepare('SELECT id, username, role, theme_preference as theme FROM users WHERE id = ?').get(req.user.id);
+  if (!user) return res.sendStatus(404);
+  res.json(user);
+});
+
+app.post('/api/theme', authenticateToken, (req: any, res) => {
+  const { theme } = req.body;
+  try {
+    auth.updateTheme(req.user.id, theme);
+    res.json({ success: true });
+  } catch (err: any) {
+    res.status(400).json({ error: err.message });
+  }
+});
+
+// API Routes (Protected)
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-// Generic View Reader
-app.get('/api/views/:viewName', (req, res) => {
+// Generic View Reader (Protected)
+app.get('/api/views/:viewName', authenticateToken, (req, res) => {
   const viewName = req.params.viewName;
   // Whitelist views for security
   const allowedViews = [
@@ -86,8 +138,8 @@ app.get('/api/views/:viewName', (req, res) => {
   }
 });
 
-// Procedures
-app.post('/api/rpc/:procedure', (req, res) => {
+// Procedures (Protected)
+app.post('/api/rpc/:procedure', authenticateToken, (req, res) => {
   const procedureName = req.params.procedure;
   const args = req.body;
 

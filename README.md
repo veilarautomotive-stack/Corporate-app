@@ -9,12 +9,18 @@ A production-grade, web-based Retail Business Operating System ensuring financia
 - **Zero UI Calculations**: The frontend is purely for presentation.
 - **Role-Based Access**: Admin and Staff roles.
 - **Theme Support**: Light and Dark modes.
+- **Secure Authentication**:
+  - Database-backed user management.
+  - Secure password hashing (bcrypt).
+  - JWT-based session management (HTTP-only cookies).
+  - Registration and Login flows.
 
 ## Getting Started
 
 1. **Login**:
    - Username: `admin`
    - Password: `admin123`
+   - Or register a new account via the "Create new account" link.
 
 2. **Dashboard**: View key metrics and financial health.
 3. **Inventory**: Manage products, stock levels, and pricing.

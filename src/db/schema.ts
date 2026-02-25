@@ -90,12 +90,14 @@ CREATE TABLE IF NOT EXISTS profit_distribution (
 );
 
 -- Users
+DROP TABLE IF EXISTS users;
 CREATE TABLE IF NOT EXISTS users (
   id TEXT PRIMARY KEY,
   username TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   role TEXT NOT NULL CHECK(role IN ('admin', 'staff', 'viewer')),
-  theme_preference TEXT DEFAULT 'light'
+  theme_preference TEXT DEFAULT 'light',
+  created_at TEXT DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Initialize Global Finance if not exists

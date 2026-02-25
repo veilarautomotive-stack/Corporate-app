@@ -9,8 +9,11 @@ import Inventory from './pages/Inventory';
 import Expenses from './pages/Expenses';
 import Finance from './pages/Finance';
 
+import Register from './pages/Register';
+
 function PrivateRoute({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  if (loading) return <div>Loading...</div>;
   return user ? <>{children}</> : <Navigate to="/login" />;
 }
 
@@ -20,6 +23,7 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           
           <Route path="/" element={
             <PrivateRoute>
