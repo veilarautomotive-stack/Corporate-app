@@ -180,14 +180,17 @@ app.post('/api/rpc/:procedure', authenticateToken, (req, res) => {
   }
 });
 
-// Global 404 Handler - Force JSON
-app.use((req, res) => {
+// Global API 404 Handler - Force JSON for unknown API routes
+app.all('/api/*', (req, res) => {
   res.status(404).json({ error: 'Not Found', path: req.path });
 });
 
 // Global Error Handler - Force JSON
 app.use((err: any, req: any, res: any, next: any) => {
   console.error(err);
+  if (res.headersSent) {
+    return next(err);
+  }
   res.status(500).json({ error: 'Internal Server Error', message: err.message });
 });
 
