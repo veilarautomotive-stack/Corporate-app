@@ -26,7 +26,13 @@ export default function Register() {
         body: JSON.stringify({ username, password, role }),
       });
       
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        throw new Error('Server returned invalid response (not JSON)');
+      }
+
       if (!res.ok) {
         throw new Error(data.error || 'Registration failed');
       }

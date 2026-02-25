@@ -26,7 +26,13 @@ export default function Login() {
         body: JSON.stringify({ username, password }),
       });
       
-      const data = await res.json();
+      let data;
+      try {
+        data = await res.json();
+      } catch (e) {
+        setStatus({ type: 'error', message: 'Server returned invalid response (not JSON)' });
+        return;
+      }
       
       if (!res.ok) {
         setStatus({ type: 'error', message: data.error || 'Invalid username or password' });
